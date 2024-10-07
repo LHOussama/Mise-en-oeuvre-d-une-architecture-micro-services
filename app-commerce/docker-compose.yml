@@ -1,0 +1,94 @@
+version: '3.8'
+services:
+  eureka-server:
+    build:
+      context: ./discore-service
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    networks:
+      - app-network
+
+  api-gateway:
+    build:
+      context: ./Gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    depends_on:
+      - eureka-server
+
+  customer-service:
+    build:
+      context: ./customer-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    networks:
+      - app-network
+    depends_on:
+      - mysql-customer
+      - eureka-server
+
+  envontory-service:
+    build:
+      context: ./envontory-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    networks:
+      - app-network
+    depends_on:
+      - mysql-envontory
+      - eureka-server
+
+  billing-service:
+    build:
+      context: ./billing-service
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+    networks:
+      - app-network
+    depends_on:
+      - mysql-billing
+      - eureka-server
+
+  mysql-customer:
+    image: mysql:8.0.33
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_DATABASE: customer_db
+      MYSQL_USER: root
+    ports:
+      - "3306:3306"
+    networks:
+      - app-network
+
+  mysql-envontory:
+    image: mysql:8.0.33
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_DATABASE: envontory_db
+      MYSQL_USER: root
+    ports:
+      - "3307:3306"
+    networks:
+      - app-network
+
+  mysql-billing:
+    image: mysql:8.0.33
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_DATABASE: bill_db
+      MYSQL_USER: root
+    ports:
+      - "3308:3306"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
